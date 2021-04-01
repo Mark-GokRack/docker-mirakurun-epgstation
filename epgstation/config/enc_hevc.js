@@ -9,10 +9,10 @@ const maxMuxingQueueSize = 1024;
 const dualMonoMode = 'main';
 const videoHeight = parseInt(process.env.VIDEORESOLUTION, 10);
 const isDualMono = parseInt(process.env.AUDIOCOMPONENTTYPE, 10) == 2;
-const audioBitrate = videoHeight > 720 ? '192k' : '128k';
+const audioBitrate = videoHeight > 720 ? '256k' : '128k';
 //const preset = 'veryfast';
-const codec = 'h264_nvenc';
-const crf = 23;
+const codec = 'hevc_nvenc';
+const crf = 32;
 
 const args = ['-y', '-analyzeduration', analyzedurationSize, '-probesize', probesizeSize];
 
@@ -21,7 +21,7 @@ if (isDualMono) {
     Array.prototype.push.apply(args, ['-dual_mono_mode', dualMonoMode]);
 }
 
-// hardware accelaratin 設定
+// setting for hardware accelaration 
 
 Array.prototype.push.apply(args,['-hwaccel', 'cuda']);
 Array.prototype.push.apply(args,['-hwaccel_output_format', 'cuda']);
@@ -37,8 +37,8 @@ Array.prototype.push.apply(args,['-movflags', 'faststart']);
 
 // video filter 設定
 let videoFilter = 'yadif_cuda';
-if (videoHeight > 720) {
-    videoFilter += ',scale=-2:720'
+if (videoHeight > 1080) {
+    videoFilter += ',scale_npp=-2:1080'
 }
 Array.prototype.push.apply(args, ['-vf', videoFilter]);
 
@@ -47,7 +47,8 @@ Array.prototype.push.apply(args,[
     //'-preset', preset,
     '-aspect', '16:9',
     '-c:v', codec,
-    '-crf', crf,
+    '-rc:v', 'vbr_minqp',
+    '-cq:v', crf,
     '-f', 'mp4',
     '-c:a', 'aac',
     '-ar', '48000',

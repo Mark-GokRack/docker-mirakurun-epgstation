@@ -1,4 +1,4 @@
-version: '3.7'
+version: '2.3' # 3.7 だと epgstation のところで runtime: nvidia が使えなかったためダウングレード
 services:
     mirakurun:
         image: chinachu/mirakurun
@@ -42,6 +42,7 @@ services:
 
     epgstation:
         build: epgstation
+        runtime: nvidia
         volumes:
             - /etc/localtime:/etc/localtime:ro
             - ./epgstation/config:/app/config
@@ -51,6 +52,10 @@ services:
             - ./recorded:/app/recorded
         environment:
             TZ: "Asia/Tokyo"
+            LANG: "C.UTF-8"
+            NVIDIA_VISIBLE_DEVICES: "all"
+        devices:
+            - /dev/dri:/dev/dri
         depends_on:
             - mirakurun
             - mysql
